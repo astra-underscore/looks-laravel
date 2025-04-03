@@ -17,12 +17,12 @@ export default function ForgotPassword({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Forgot Password" />
+            <Head title="Olvidé mi contraseña" />
 
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
+                ¿Ólvidaste tu contraseña? No hay tu problema. Solo danos tu 
+                dirección de correo electrónico y te enviaremos un enlace de
+                restablecimiento de contraseña que te permitirá elegir una nueva.
             </div>
 
             {status && (
