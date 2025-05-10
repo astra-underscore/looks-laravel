@@ -6,6 +6,7 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\RolesEnum;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
+use App\Filament\Resources\ProductResource\Pages\ProductImages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Facades\Filament;
@@ -15,6 +16,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -31,6 +33,8 @@ class ProductResource extends Resource
 
     protected static ?string $modelLabel = "producto";
     protected static ?string $pluralModelLabel = "productos";
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::End;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -163,13 +167,15 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'images' => Pages\ProductImages::route('/{record}/images')
         ];
     }
 
     public static function getRecordSubNavigation(Page $page): array
     {
         return $page->generateNavigationItems([
-            EditProduct::class
+            EditProduct::class,
+            ProductImages::class
         ]);
     }
 
