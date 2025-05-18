@@ -14,7 +14,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-           <Navbar />
+            <Navbar></Navbar>
 
             {header && (
                 <header className="bg-white shadow dark:bg-gray-800">
