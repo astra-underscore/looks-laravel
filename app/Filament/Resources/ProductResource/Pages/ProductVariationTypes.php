@@ -16,7 +16,7 @@ use Filament\Resources\Pages\EditRecord;
 class ProductVariationTypes extends EditRecord
 {
     protected static string $resource = ProductResource::class;
-    protected static ?string $title = 'Variaciones del producto';
+    protected static ?string $title = 'Tipos de variaciones';
     protected static ?string $navigationIcon = 'heroicon-m-numbered-list';
 
     public function form(Form $form): Form
@@ -24,7 +24,7 @@ class ProductVariationTypes extends EditRecord
         return $form
                 ->schema([
                     Repeater::make('variationsTypes')
-                        ->label('Variaciones')
+                        ->label(false)
                         ->relationship()
                         ->collapsible()
                         ->defaultItems(1)
