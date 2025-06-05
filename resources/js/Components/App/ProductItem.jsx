@@ -1,5 +1,6 @@
 import React from 'react';
 import {Link} from '@inertiajs/react';
+import {NumericFormat} from "react-number-format";
 
 const ProductItem = ({product}) => {
     return (
@@ -21,7 +22,13 @@ const ProductItem = ({product}) => {
                 <div className="card-actions items-center justify-between mt-3">
                     <button className="btn btn-primary">Añadir al carrito</button>
                     <span className="text-2xl">
-                        ${product.price}
+                        <NumericFormat value={product.price}
+                                       displayType={'text'}
+                                       thousandSeparator={true}
+                                       prefix={'$'}
+                                       decimalScale={0}
+                                       fixedDecimalScale={true}
+                        />
                     </span>
                 </div>
             </div>

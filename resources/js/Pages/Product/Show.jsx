@@ -1,7 +1,32 @@
 import {Head, router, useForm, usePage} from "@inertiajs/react";
 import {useEffect, useMemo, useState} from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import Carousel from "@/Components/Carousel.jsx";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";""
+import {arraysAreEqual} from "@/helpers.js";
+import {NumericFormat} from "react-number-format";
+
+const Carousel = ({ images }) => {
+  if (!images || images.length === 0) {
+    return null; // Or some placeholder/fallback
+  }
+
+  return (
+    <div className="carousel w-full">
+      {images.map((image, index) => (
+        <div key={index} id={`slide${index}`} className="carousel-item relative w-full">
+          <img
+            src={image.large} // Using the large version of the image
+            className="w-full object-contain"
+            alt=""
+          />
+          <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+            <a href={`#slide${index === 0 ? images.length - 1 : index - 1}`} className="btn btn-circle">❮</a>
+            <a href={`#slide${index === images.length - 1 ? 0 : index + 1}`} className="btn btn-circle">❯</a>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 function Show({product, variationOptions}) {
 
@@ -15,40 +40,74 @@ function Show({product, variationOptions}) {
 
     const [selectedOptions, setSelectedOptions] = useState([]);
 
+  //  const images = useMemo(() => {
+    //for (let typeId in selectedOptions) {
+    //        const option = selectedOptions[typeId];
+    //        if (option.images.length > 0) return option.images;
+    //    }
+    //    return product.images || [];
+    //}, [product, selectedOptions]);
+
     const images = useMemo(() => {
-        for (let typeId in selectedOptions) {
-            const option = selectedOptions[typeId];
-            if (option.images.length > 0) return option.images;
+        // First check if there are any selected options
+        if (Object.keys(selectedOptions).length > 0) {
+            for (let typeId in selectedOptions) {
+                const option = selectedOptions[typeId];
+                // Check if option exists and has images array
+                if (option && option.images && option.images.length > 0) {
+                    return option.images;
+                }
+            }
         }
-        return product.images;
+        // Fallback to product images if no option images found
+        return product.images || [];
     }, [product, selectedOptions]);
+
+    useEffect(() => {
+      console.log('Images received:', images);
+    }, [images]);
 
 
     const computedProduct = useMemo(() => {
-        const selectedOptionIds =
-            Object.values(selectedOptions)
-                .map(option => option.id)
-                .sort();
+    // First check if we have valid selectedOptions
+    if (!selectedOptions || Object.keys(selectedOptions).length === 0) {
+        return {
+            price: product.price,
+            quantity: product.quantity
+        };
+    }
 
-        for (let variation of product.variationsTypes) {
-            const optionIDs = variation.variation_type_option_ids.sort();
+    const selectedOptionIds = Object.values(selectedOptions)
+        .filter(option => option && option.id) // Filter out any undefined or invalid options
+        .map(option => option.id)
+        .sort();
+
+    // Only proceed with variation matching if we have valid selectedOptionIds
+    if (selectedOptionIds.length > 0 && product.variations) {
+        for (let variation of product.variations) {
+            if (!variation.variation_type_option_ids) continue;
+
+            const optionIDs = [...variation.variation_type_option_ids].sort();
             if (arraysAreEqual(selectedOptionIds, optionIDs)) {
                 return {
                     price: variation.price,
                     quantity: variation.quantity === null
                         ? Number.MAX_SAFE_INTEGER
                         : variation.quantity,
-                }
+                };
             }
         }
-        return {
-            price: product.price,
-            quantity: product.quantity
-        };
-    },[product, selectedOptions]);
+    }
+
+    // Fallback to default product values
+    return {
+        price: product.price,
+        quantity: product.quantity
+    };
+}, [product, selectedOptions]);
 
     useEffect(() => {
-        for (let type of product.variationTypes) {
+        for (let type of product.variationsTypes) {
             const selectedOptionId = variationOptions[type.id];
             chooseOption(
                 type.id,
@@ -96,7 +155,7 @@ function Show({product, variationOptions}) {
 
     const renderProductVariationTypes = () => {
         return (
-            product.variationTypes.map((type, i) => (
+            product.variationsTypes.map((type, i) => (
                 <div key={i} className="flex items-center mt-4">
                     <b className="text-xl text-gray-900 dark:text-gray-100 font-bold mr-2">{type.name}</b>
                     {type.type === 'image' &&
@@ -141,7 +200,7 @@ function Show({product, variationOptions}) {
                         className="select select-bordered w-full">
                     {Array.from({
                         length: Math.min(10, computedProduct.quantity)
-                    }).map(el, i =>
+                    }).map((el, i) =>
                         <option key={i} value={i + 1}>Cantidad: {i + 1}</option>
                     )}
                 </select>
@@ -154,11 +213,26 @@ function Show({product, variationOptions}) {
     }
 
     useEffect(() => {
+        if (!product?.variationsTypes?.length) return {};
+
+        console.log('Creating idsMap with types:', product.variationsTypes);
+
+        /*
         const idsMap =
             Object.fromEntries(
                 Object.entries(selectedOptions)
                     .map(([a, b]) => [a, b.id])
             );
+        */
+        console.log('selectedOptions:', selectedOptions);
+        console.log('selectedOptions entries:', Object.entries(selectedOptions));
+
+        const idsMap = Object.fromEntries(
+            Object.entries(selectedOptions)
+                .filter(([_, value]) => value && value.id)  // Filter out entries with undefined values or missing id
+                .map(([key, value]) => [key, value.id])
+        );
+
 
         form.setData('option_ids', idsMap);
     }, [selectedOptions]);
@@ -176,7 +250,13 @@ function Show({product, variationOptions}) {
                         <h1 className="text-2xl font-bold">{product.name}</h1>
                         <div className="flex items-center mt-4">
                             <h2 className="text-xl font-bold mr-2">
-                                <CurrencyFormatter ammount={computedProduct.price} />
+                                <NumericFormat value={computedProduct.price}
+                                               displayType={'text'}
+                                               thousandSeparator={true}
+                                               prefix={'$'}
+                                               decimalScale={0}
+                                               fixedDecimalScale={true}
+                                />
                             </h2>
                         </div>
                         {renderProductVariationTypes()}
