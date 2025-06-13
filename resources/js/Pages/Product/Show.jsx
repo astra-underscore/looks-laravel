@@ -119,7 +119,9 @@ function Show({product, variationOptions}) {
 
     const getOptionIdsMap = (newOptions) => {
         return Object.fromEntries(
-            Object.entires(newOptions).map(([a, b]) => [a, b.id])
+            Object.entries(newOptions)
+                .filter(([_, b]) => b && b.id)
+                .map(([a, b]) => [a, b.id])
         )
     }
 
@@ -158,7 +160,7 @@ function Show({product, variationOptions}) {
             product.variationsTypes.map((type, i) => (
                 <div key={i} className="flex items-center mt-4">
                     <b className="text-xl text-gray-900 dark:text-gray-100 font-bold mr-2">{type.name}</b>
-                    {type.type === 'image' &&
+                    {type.type === 'Image' &&
                         <div className="flex gap-2 mb-4">
                             {type.options.map((option) => (
                                 <div onClick={() => chooseOption(type.id, option)}
@@ -174,16 +176,17 @@ function Show({product, variationOptions}) {
                             ))}
                         </div>
                     }
-                    {type.type === 'radio' &&
+                    {type.type === 'Radio' &&
                     <div className="flex join mb-4">
-                        <input onChange={() => chooseOption(type.id, option)}
-                               key={option.id}
-                               className="join-item btn"
-                               type="radio"
-                               value={option.id}
-                               checked={selectedOptions[type.id]?.id === option.id}
-                               name={'variation_type_' + type.id}
-                               aria-label={option.name}/>
+                        {(type.options.map(option => (
+                            <input onChange={() => chooseOption(type.id, option)}
+                                key={option.id}
+                                className="join-item btn"
+                                type="radio"
+                                value={option.id}
+                                checked={selectedOptions[type.id]?.id === option.id}
+                                name={'variation_type_' + type.id}
+                                aria-label={option.name}/>)))}
                     </div>
                     }
                 </div>
